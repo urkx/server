@@ -94,13 +94,10 @@ void handleConnections(int *create_socket, struct sockaddr_in *address, char *bu
 }
 
 int main() {
-    //int create_socket, new_socket;
     int create_socket;
     char *buffer;
     int bufsize = 1024;
     struct sockaddr_in address;
-    // socklen_t addrlen;
-
     buffer = (char *)malloc(bufsize);
     if(!buffer) error("Buffer was not allocated\n");
 
@@ -143,45 +140,6 @@ int main() {
     printf("Socket is listening\n");
 
     handleConnections(&create_socket, &address, buffer, bufsize, fsize, msg);
-    /*while(1) {
-        addrlen = sizeof(address);
-        new_socket = accept(create_socket, (struct sockaddr *)&address, &addrlen);
-
-        if(new_socket == -1) error("Client not accepted");
-
-        printf("Client connected from %s:%hu\n", inet_ntoa(address.sin_addr), ntohs(address.sin_port));
-
-        int numRead = recv(new_socket, buffer, bufsize, 0);
-        if(numRead < 1) {
-            if(numRead == 0) {
-                printf("Client disconnected\n");
-            } else {
-                perror("Client not read");
-            }
-            close(new_socket);
-            continue;
-        }
-        printf("%.*s\n", numRead, buffer);
-
-        if(!addHeader(&new_socket, "HTTP/1.1 200 OK\r\n")) continue;
-
-        char clen[40];
-        sprintf(clen, "Content-length: %ld\r\n", fsize);
-
-        if(!addHeader(&new_socket, clen)) continue;
-
-        if(!addHeader(&new_socket, "Content-Type: text/html\r\n")) continue;
-
-        if(!addHeader(&new_socket, "Connection: close\r\n\r\n")) continue;
-
-        if(!writeDataToClient(new_socket, msg, fsize)) {
-            close(new_socket);
-            continue;
-        }
-
-        printf("File sent\n");
-        close(new_socket);
-    }*/
 
     close(create_socket);
     return 0;
