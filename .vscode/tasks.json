@@ -1,0 +1,28 @@
+{
+    "tasks": [
+        {
+            "label": "make",
+            "type": "shell",
+            "command": "make all",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "compile gcc",
+            "type": "shell",
+            "command": "gcc",
+            "args": [
+                "-g",
+                "-Wall",
+                "-o",
+                "server",
+                "server.c"
+            ],
+            "problemMatcher": ["$gcc"],
+            "group": "build"
+        }
+    ],
+    "version": "2.0.0"
+}
