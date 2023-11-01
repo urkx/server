@@ -38,38 +38,64 @@ bool addHeader(int *socket, char *header) {
     return res;
 }
 
+
+bool httpOk(struct Resource *resource, int *new_socket) {
+    if(!addHeader(new_socket, "HTTP/1.1 200 OK\r\n")) return false;
+
+    char clen[40];
+    sprintf(clen, "Content-length: %ld\r\n", resource->fsize);
+
+    if(!addHeader(new_socket, clen)) return false;
+
+    if(!addHeader(new_socket, "Content-Type: text/html\r\n")) return false;
+
+    if(!addHeader(new_socket, "Connection: close\r\n\r\n")) return false;
+
+    if(!writeDataToClient(*new_socket, resource->resource, resource->fsize)) {
+        close(*new_socket);
+        return false;
+    }
+
+    return true;
+}
+
+bool httpNotFound(int *new_socket) {
+    if(!addHeader(new_socket, "HTTP/1.1 404 Not Found\r\n")) return false;
+    return true;
+}
+
 struct Resource getResource(char *buffer) {
     char *fh = strtok(buffer, "\r\n");
     strtok(fh, " ");
     char *resource = strtok(NULL, " ");
     struct Resource res;
+    res.fsize = 0L;
 
     if(strcmp(resource, root) == 0) resource = "/index.html";
 
     resource = resource + 1;
-    printf("%s", resource);
 
     FILE *fp = fopen(resource, "rb");
-    if(!fp) error("File not opened");
+    if(fp != NULL) { 
+        printf("File opened\n");
 
-    printf("File opened\n");
+        if(fseek(fp, 0, SEEK_END) == -1) error("File not seeked");
 
-    if(fseek(fp, 0, SEEK_END) == -1) error("File not seeked");
+        long fsize = ftell(fp);
+        if(fsize == -1) error("File size not retrieved");
 
-    long fsize = ftell(fp);
-    if(fsize == -1) error("File size not retrieved");
+        rewind(fp);
 
-    rewind(fp);
+        char *msg = (char *)malloc(fsize);
+        if(!msg) error("File buffer not allocated");
 
-    char *msg = (char *)malloc(fsize);
-    if(!msg) error("File buffer not allocated");
+        if(fread(msg, fsize, 1, fp) != 1) error("File not read");
 
-    if(fread(msg, fsize, 1, fp) != 1) error("File not read");
+        res.fsize = fsize;
+        res.resource = msg;
 
-    res.fsize = fsize;
-    res.resource = msg;
-
-    fclose(fp);
+        fclose(fp);
+    }
 
     return res;
 }
@@ -105,25 +131,14 @@ void handleConnections(int *create_socket, struct sockaddr_in *address) {
 
         struct Resource resource = getResource(buffer);
 
-
-        if(!addHeader(&new_socket, "HTTP/1.1 200 OK\r\n")) continue;
-
-        char clen[40];
-        sprintf(clen, "Content-length: %ld\r\n", resource.fsize);
-
-        if(!addHeader(&new_socket, clen)) continue;
-
-        if(!addHeader(&new_socket, "Content-Type: text/html\r\n")) continue;
-
-        if(!addHeader(&new_socket, "Connection: close\r\n\r\n")) continue;
-
-        if(!writeDataToClient(new_socket, resource.resource, resource.fsize)) {
-            close(new_socket);
-            continue;
+        if(resource.fsize == 0L) {
+            if(!httpNotFound(&new_socket)) continue;
+        } else {
+            if(!httpOk(&resource, &new_socket)) continue;
+            printf("File sent\n");
+            free(resource.resource);
         }
 
-        printf("File sent\n");
-        free(resource.resource);
         close(new_socket);
     }
 
