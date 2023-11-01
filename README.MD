@@ -10,5 +10,6 @@ HTTP Responses implemented:
 - 404 Not Found
 
 TODO list: 
-- Handle paths 
+- ~~Handle paths~~
+- File configuration support (JSON, YAML, TOML, custom... 🤷‍♂️) 
 - Threads support
