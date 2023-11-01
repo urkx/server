@@ -29,6 +29,7 @@ bool writeStrToClient(int sckt, const char *str) {
     return writeDataToClient(sckt, str, strlen(str));
 }
 
+// Aux function that adds a header to a socket
 bool addHeader(int *socket, char *header) {
     bool res = true;
     if(!writeStrToClient(*socket, header)) {
@@ -39,6 +40,8 @@ bool addHeader(int *socket, char *header) {
 }
 
 
+// HTTP 200 Response handler
+// Returns true if no errors happened
 bool httpOk(struct Resource *resource, int *new_socket) {
     if(!addHeader(new_socket, "HTTP/1.1 200 OK\r\n")) return false;
 
@@ -59,11 +62,15 @@ bool httpOk(struct Resource *resource, int *new_socket) {
     return true;
 }
 
+// HTTP 404 Response handler
+// Returns true if no errors happened
 bool httpNotFound(int *new_socket) {
     if(!addHeader(new_socket, "HTTP/1.1 404 Not Found\r\n")) return false;
     return true;
 }
 
+// Aux function that retrieves a file
+// Returns a buffer that contains file content and its size
 struct Resource getResource(char *buffer) {
     char *fh = strtok(buffer, "\r\n");
     strtok(fh, " ");
@@ -100,6 +107,7 @@ struct Resource getResource(char *buffer) {
     return res;
 }
 
+// Handles connections
 void handleConnections(int *create_socket, struct sockaddr_in *address) {
     socklen_t addrlen;
     char *buffer;
