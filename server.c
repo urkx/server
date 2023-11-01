@@ -66,16 +66,22 @@ struct Resource getResource(char *buffer) {
 
     if(fread(msg, fsize, 1, fp) != 1) error("File not read");
 
-    fclose(fp);
-
     res.fsize = fsize;
     res.resource = msg;
+
+    fclose(fp);
+
     return res;
 }
 
-void handleConnections(int *create_socket, struct sockaddr_in *address, char *buffer, int bufsize) {
+void handleConnections(int *create_socket, struct sockaddr_in *address) {
     socklen_t addrlen;
+    char *buffer;
+    int bufsize = 1024;
     int new_socket;
+    buffer = (char *)malloc(bufsize);
+    if(!buffer) error("Buffer for connection was not allocated\n");
+
     while(1) {
         addrlen = sizeof(*address);
         new_socket = accept(*create_socket, (struct sockaddr *)address, &addrlen);
@@ -117,17 +123,16 @@ void handleConnections(int *create_socket, struct sockaddr_in *address, char *bu
         }
 
         printf("File sent\n");
+        free(resource.resource);
         close(new_socket);
     }
+
+    free(buffer);
 }
 
 int main() {
     int create_socket;
-    char *buffer;
-    int bufsize = 1024;
     struct sockaddr_in address;
-    buffer = (char *)malloc(bufsize);
-    if(!buffer) error("Buffer was not allocated\n");
 
     create_socket = socket(AF_INET, SOCK_STREAM, 0);
     if(create_socket == -1) error("Socket not created");
@@ -143,31 +148,11 @@ int main() {
 
     printf("Socket bound\n");
 
-    long fsize;
-    FILE *fp = fopen("index.html", "rb");
-    if(!fp) error("File not opened");
-
-    printf("File opened\n");
-
-    if(fseek(fp, 0, SEEK_END) == -1) error("File not seeked");
-
-    fsize = ftell(fp);
-    if(fsize == -1) error("File size not retrieved");
-
-    rewind(fp);
-
-    char *msg = (char *)malloc(fsize);
-    if(!msg) error("File buffer not allocated");
-
-    if(fread(msg, fsize, 1, fp) != 1) error("File not read");
-
-    fclose(fp);
-
     if(listen(create_socket, 10) == -1) error("Socket was not opened for listening");
 
     printf("Socket is listening\n");
 
-    handleConnections(&create_socket, &address, buffer, bufsize);
+    handleConnections(&create_socket, &address);
 
     close(create_socket);
     return 0;
