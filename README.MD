@@ -1,6 +1,6 @@
 # server - HTTP Server written in C
 
-HTTP Server implementation using Linux sockets.
+HTTP Server implementation using unix sockets.
 
 HTTP Methods handled:
 - GET
