@@ -115,9 +115,10 @@ void handleConnections(int *create_socket, struct sockaddr_in *address) {
     int new_socket;
     buffer = (char *)malloc(bufsize);
     if(!buffer) error("Buffer for connection was not allocated\n");
-
+    
+    addrlen = sizeof(*address);
+    
     while(1) {
-        addrlen = sizeof(*address);
         new_socket = accept(*create_socket, (struct sockaddr *)address, &addrlen);
 
         if(new_socket == -1) error("Client not accepted");
