@@ -1,3 +1,7 @@
 server
 .vscode/*
 *.html
+tpool/*.o
+tpool/*.a
+tpool/lib*d
+tpool/*_test
