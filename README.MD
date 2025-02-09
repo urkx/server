@@ -2,14 +2,22 @@
 
 HTTP Server implementation using unix sockets.
 
-HTTP Methods handled:
+## Specification
+
+### HTTP
+
+Methods handled:
 - GET
 
-HTTP Responses implemented:
+Responses implemented:
 - 200 OK
 - 404 Not Found
 
-TODO list: 
+### ICMP
+
+Implemented ICMP (ping) functionality
+
+## Roadmap: 
 - ~~Handle paths~~
 - File configuration support (JSON, YAML, TOML, custom... 🤷‍♂️) 
 - Threads support
