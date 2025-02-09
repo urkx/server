@@ -154,14 +154,44 @@ void handleConnections(int *create_socket, struct sockaddr_in *address) {
     free(buffer);
 }
 
+void* pingHandler(void* arg) {
+    int* socket = (int*) arg;
+    printf("Waiting for ping\n");
+
+    size_t size = 1024;
+    while (1) {
+        char* buff = (char*)malloc(size);
+        int r = recv(*socket, buff, size, 0);
+
+        printf("%.*s\n", r, buff);
+        send(*socket, buff, r, 0);
+
+        printf("Ping sent\n");
+    }
+    return NULL;
+}
+
+void pingThread(int* socket) {
+    pthread_t pid;
+    int thread = pthread_create(&pid, NULL, pingHandler, (void*)(socket));
+    if(thread != 0) {
+        printf("Error ping thread\n");
+    }
+    pthread_join(pid, NULL);
+}
+
 int main() {
-    int create_socket;
+    int create_socket, dgram_socket;
     struct sockaddr_in address;
 
     create_socket = socket(AF_INET, SOCK_STREAM, 0);
+    dgram_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_ICMP);
+
     if(create_socket == -1) error("Socket not created");
+    if(dgram_socket == -1) error("ICMP socket not created");
     
     printf("Socket created\n");
+    printf("ICMP ocket created\n");
 
     memset(&address, 0, sizeof(address));
     address.sin_family = AF_INET;
@@ -175,6 +205,8 @@ int main() {
     if(listen(create_socket, 10) == -1) error("Socket was not opened for listening");
 
     printf("Socket is listening\n");
+
+    pingThread(&dgram_socket);
 
     handleConnections(&create_socket, &address);
 

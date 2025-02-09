@@ -8,6 +8,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <arpa/inet.h>
+#include <pthread.h>
 #include "tpool.h"
 
 #define PORT 8080
